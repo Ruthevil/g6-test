@@ -235,15 +235,22 @@ graph.on('node:click', (e) => {
         // TODO：弹窗提供用户自定义输入节点名称
         console.log("add-icon");
         console.log(curGraphHeight);
-        graph.height = currentNodeId + 100;  // todo:如何增加节点的同时自改整个graph的高度
-        let data = {
+        // graph.height = currentNodeId + 100;  // todo:如何增加节点的同时修改整个graph的高度
+        let nodeData = {
             id: `${currentNodeId}-${number++}`,
             label: "我是新节点"
         };
-        graph.addChild(data, currentNodeId)
+        graph.addChild(nodeData, currentNodeId)
+
+        // console.log(graph.cfg);
+        graph.cfg = Object.assign(graph.cfg, {height: curGraphHeight + 100});
+        graph.destroy();
+        graph.render();
+        graph.fitView();
     }
     if (name === "delete-icon") {
         console.log("delete-icon");
+        // TODO：弹窗提供用户确认操作
         // TODO：递归删除当前节点的子节点
         graph.removeItem(node);
         // 请求后台，成功返回后重新渲染
@@ -251,6 +258,10 @@ graph.on('node:click', (e) => {
         graph.fitView();
     }
 
+});
+
+graph.on("node:dblclick", (ev) => {
+    console.log("dblclick", ev);
 });
 
 /**
