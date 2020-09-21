@@ -2,6 +2,32 @@
  * Created by baidm in 2020-09-18 on 上午 9:30
  */
 /**
+ * 解决文字过长溢出问题
+ * @param {string} str 
+ */
+const calcStrLen = str => {
+    let len = 0;
+    for (let i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) > 0 && str.charCodeAt(i) < 128) {
+            len++;
+        } else {
+            len += 2;
+        }
+    }
+    return len;
+};
+const fittingString = (str, maxWidth, fontSize) => {
+    const fontWidth = fontSize * 1.3; // 字号+边距
+    maxWidth = maxWidth * 2; // 需要根据自己项目调整
+    const width = calcStrLen(str) * fontWidth;
+    const ellipsis = '…';
+    if (width > maxWidth) {
+        const actualLen = Math.floor((maxWidth - 10) / fontWidth);
+        return str.substring(0, actualLen) + ellipsis;
+    }
+    return str;
+};
+/**
  * 创建提示
  * @param position 鼠标点击的位置
  * @param name 节点名称

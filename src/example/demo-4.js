@@ -67,30 +67,6 @@ G6.registerNode('card-node', {
         const w = cfg.size[0];
         const h = cfg.size[1];
 
-        const calcStrLen = str => {
-            let len = 0;
-            for (let i = 0; i < str.length; i++) {
-                if (str.charCodeAt(i) > 0 && str.charCodeAt(i) < 128) {
-                    len++;
-                } else {
-                    len += 2;
-                }
-            }
-            return len;
-        };
-        //解决文字过长溢出问题
-        const fittingString = (str, maxWidth, fontSize) => {
-            const fontWidth = fontSize * 1.3; // 字号+边距
-            maxWidth = maxWidth * 2; // 需要根据自己项目调整
-            const width = calcStrLen(str) * fontWidth;
-            const ellipsis = '…';
-            if (width > maxWidth) {
-                const actualLen = Math.floor((maxWidth - 10) / fontWidth);
-                return str.substring(0, actualLen) + ellipsis;
-            }
-            return str;
-        };
-
         const shape = group.addShape('rect', {
             attrs: {
                 ...style.default.nodeStyle,
@@ -206,7 +182,17 @@ const graph = new G6.TreeGraph({
     height,
     // plugins: [minimap],
     modes: {
-        default: ['drag-canvas', 'zoom-canvas'],
+        default: [
+            'drag-canvas', 
+            'zoom-canvas',
+            {
+                type: 'tooltip',
+                formatText: function formatText(model) {
+                    return model.label;
+                },
+                offset: 30,
+          }
+        ],
     },
     defaultNode: {
         type: 'card-node',
@@ -276,37 +262,37 @@ graph.on("node:mouseenter", (ev) => {
     //其余节点置灰
     changeOthers(style.default);
 });
-/**
- * 鼠标在元素内部移到时不断触发，弹出tooltip；
- */
-graph.on("node:mousemove", (ev) => {
-    const {item, target, x, y} = ev;
-    const {
-        attrs: {isLabel},
-    } = target;
-    const model = item.getModel();
-    const {label, id} = model;
-    if (isLabel) {
-        const position = graph.getClientByPoint(x, y);
-        createTooltip(position, label, id);
-    } else {
-        removeTooltip(id);
-    }
-});
-/**
- * 鼠标移出目标元素后触发，移除tooltip；
- */
-graph.on("node:mouseout", (ev) => {
-    const {item, target} = ev;
-    const {
-        attrs: {isLabel},
-    } = target;
-    const model = item.getModel();
-    const {id} = model;
-    if (isLabel) {
-        removeTooltip(id);
-    }
-});
+// /**
+//  * 鼠标在元素内部移到时不断触发，弹出tooltip；
+//  */
+// graph.on("node:mousemove", (ev) => {
+//     const {item, target, x, y} = ev;
+//     const {
+//         attrs: {isLabel},
+//     } = target;
+//     const model = item.getModel();
+//     const {label, id} = model;
+//     if (isLabel) {
+//         const position = graph.getClientByPoint(x, y);
+//         createTooltip(position, label, id);
+//     } else {
+//         removeTooltip(id);
+//     }
+// });
+// /**
+//  * 鼠标移出目标元素后触发，移除tooltip；
+//  */
+// graph.on("node:mouseout", (ev) => {
+//     const {item, target} = ev;
+//     const {
+//         attrs: {isLabel},
+//     } = target;
+//     const model = item.getModel();
+//     const {id} = model;
+//     if (isLabel) {
+//         removeTooltip(id);
+//     }
+// });
 /**
  * 鼠标移出元素范围时触发，回到所有节点原始状态。
  */
