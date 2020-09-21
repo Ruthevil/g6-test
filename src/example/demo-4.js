@@ -195,12 +195,19 @@ const data = {
 };
 
 const width = document.getElementById('mountNode').scrollWidth;
-const height = document.getElementById('mountNode').scrollHeight || 500;
+const height = document.getElementById('mountNode').scrollHeight;
+const minimap = new G6.Minimap({
+    size: [150, 100],
+});
 
 const graph = new G6.TreeGraph({
     container: 'mountNode',
     width,
     height,
+    // plugins: [minimap],
+    modes: {
+        default: ['drag-canvas', 'zoom-canvas'],
+    },
     defaultNode: {
         type: 'card-node',
         size: [120, 40],
@@ -223,41 +230,30 @@ const graph = new G6.TreeGraph({
 /**
  * 节点点击事件
  */
-let number = 1;
-graph.on('node:click', (e) => {
-    const node = e.item;
-    const name = e.target.get('name');
-
-    const currentNodeId = node.get("id");
-    const curGraphHeight = graph.get("height");
-
-    if (name === "add-icon") {
-        // TODO：弹窗提供用户自定义输入节点名称
-        console.log("add-icon");
-        console.log(curGraphHeight);
-        // graph.height = currentNodeId + 100;  // todo:如何增加节点的同时修改整个graph的高度
-        let nodeData = {
-            id: `${currentNodeId}-${number++}`,
-            label: "我是新节点"
-        };
-        graph.addChild(nodeData, currentNodeId)
-
-        // console.log(graph.cfg);
-        graph.cfg = Object.assign(graph.cfg, {height: curGraphHeight + 100});
-        graph.destroy();
-        graph.render();
-        graph.fitView();
+graph.on('node:click', (ev) => {
+    const {item, target} = ev;
+    const targetType = target.get('type');
+    const name = target.get('name');
+    // 结点的操作逻辑（增加、删除）
+    if (targetType === 'marker') {
+        const model = item.getModel();
+        if (name === 'add-icon') {
+            if (!model.children) {
+                model.children = [];
+            }
+            // TODO：弹窗提供用户自定义输入节点名称
+            const id = `n-${Math.random()}`;
+            model.children.push({
+                id,
+                label: id.substr(0, 8),
+            });
+            graph.updateChild(model, model.id);
+        } else if (name === 'delete-icon') {
+            // TODO：弹窗提供用户确认操作
+            graph.removeChild(model.id);
+            // TODO：请求后台写入数据库
+        }
     }
-    if (name === "delete-icon") {
-        console.log("delete-icon");
-        // TODO：弹窗提供用户确认操作
-        // TODO：递归删除当前节点的子节点
-        graph.removeItem(node);
-        // 请求后台，成功返回后重新渲染
-        graph.render();
-        graph.fitView();
-    }
-
 });
 
 graph.on("node:dblclick", (ev) => {
